@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14213d">
+<title>Rem Scroll</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--tx:#f1f5f9;--mut:#94a3b8;--acc:#22c55e;--warn:#f97316;--bad:#ef4444}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;padding-bottom:84px}
+  header{padding:18px 16px 4px}
+  h1{margin:0;font-size:22px}
+  .sub{color:var(--mut);font-size:14px;margin-top:4px}
+  main{padding:12px 16px;max-width:520px;margin:0 auto}
+  .card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px}
+  h2{font-size:16px;margin:0 0 10px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  button{font:inherit;border:0;border-radius:12px;padding:14px;background:#334155;color:var(--tx);cursor:pointer;width:100%}
+  button.pri{background:var(--acc);color:#052e16;font-weight:700}
+  button.warn{background:var(--warn);color:#431407;font-weight:700}
+  button.ghost{background:transparent;border:1px solid #475569}
+  button:disabled{opacity:.4}
+  .app{font-size:15px;font-weight:600}
+  .big{font-size:56px;font-weight:800;text-align:center;margin:10px 0;font-variant-numeric:tabular-nums}
+  .center{text-align:center}
+  .mut{color:var(--mut);font-size:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+  .chip{width:auto;padding:10px 14px;border-radius:999px}
+  .chip.on{background:var(--acc);color:#052e16;font-weight:700}
+  input{font:inherit;width:100%;padding:12px;border-radius:12px;border:1px solid #475569;background:#0f172a;color:var(--tx)}
+  .stat{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #334155}
+  .stat:last-child{border:0}
+  .ok{color:var(--acc);font-weight:700}.no{color:var(--bad);font-weight:700}
+  nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0b1222;border-top:1px solid #334155;padding-bottom:env(safe-area-inset-bottom)}
+  nav button{border-radius:0;background:transparent;color:var(--mut);padding:12px 4px;font-size:13px}
+  nav button.on{color:var(--acc);font-weight:700}
+  .hide{display:none}
+  .task{font-size:20px;font-weight:700;text-align:center;margin:14px 0}
+  .bar{height:10px;background:#334155;border-radius:99px;overflow:hidden;margin:6px 0}
+  .bar>div{height:100%;background:var(--acc)}
+  .breath{width:140px;height:140px;border-radius:50%;margin:16px auto;background:radial-gradient(circle,#22c55e55,#22c55e11);animation:br 8s ease-in-out infinite}
+  @keyframes br{0%,100%{transform:scale(.7)}50%{transform:scale(1.1)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛑 Rem Scroll</h1>
+  <div class="sub" id="streakTxt"></div>
+</header>
+<main>
+
+<!-- TAB: GERBANG -->
+<section id="tab-gerbang">
+  <div id="g-pick" class="card">
+    <h2>Mau buka apa?</h2>
+    <div class="grid" id="appBtns"></div>
+    <p class="mut">Buka app ini <b>dulu</b> setiap kali tangan mau ke TikTok/IG/Threads.</p>
+  </div>
+
+  <div id="g-wait" class="card hide center">
+    <h2 id="g-wait-title"></h2>
+    <div class="breath"></div>
+    <div class="mut">Tarik napas… buang… Tunggu sebentar.</div>
+    <div class="big" id="g-count">10</div>
+  </div>
+
+  <div id="g-ask" class="card hide">
+    <h2>Sebenarnya kamu lagi butuh apa?</h2>
+    <div class="chips" id="needChips"></div>
+    <div class="grid" style="margin-top:12px">
+      <button class="pri" id="btnSwap">💪 Ganti aktivitas</button>
+      <button class="warn" id="btnOpen">Tetap buka</button>
+    </div>
+  </div>
+
+  <div id="g-limit" class="card hide">
+    <h2>Oke, berapa lama?</h2>
+    <div class="chips" id="minChips"></div>
+    <p class="mut">Pasang alarm/timer HP sesuai menit ini, lalu buka.</p>
+    <button class="warn" id="btnGo" disabled>Buka sekarang</button>
+    <button class="ghost" id="btnCancel" style="margin-top:8px">Batal, aku ganti aktivitas aja</button>
+  </div>
+
+  <div id="g-swap" class="card hide center">
+    <h2>Tugas mini (≤5 menit)</h2>
+    <div class="task" id="taskTxt"></div>
+    <div class="grid">
+      <button class="pri" id="btnDone">✅ Sudah</button>
+      <button class="ghost" id="btnOther">🔄 Lainnya</button>
+    </div>
+  </div>
+
+  <div id="g-win" class="card hide center">
+    <div style="font-size:56px">🎉</div>
+    <h2>Menang 1 ronde!</h2>
+    <div class="mut" id="winTxt"></div>
+    <button class="pri" id="btnBack" style="margin-top:12px">Kembali</button>
+  </div>
+</section>
+
+<!-- TAB: FOKUS -->
+<section id="tab-fokus" class="hide">
+  <div class="card center">
+    <h2>Timer fokus</h2>
+    <div class="chips" style="justify-content:center" id="focusChips"></div>
+    <div class="big" id="fClock">15:00</div>
+    <div class="bar"><div id="fBar" style="width:0%"></div></div>
+    <div class="grid" style="margin-top:12px">
+      <button class="pri" id="fStart">Mulai</button>
+      <button class="ghost" id="fStop">Stop</button>
+    </div>
+    <p class="mut">Taruh HP telungkup. Jangan dibuka sampai bunyi.</p>
+  </div>
+</section>
+
+<!-- TAB: STATISTIK -->
+<section id="tab-stat" class="hide">
+  <div class="card">
+    <h2>Hari ini</h2>
+    <div id="todayStats"></div>
+  </div>
+  <div class="card">
+    <h2>7 hari terakhir</h2>
+    <div id="weekStats"></div>
+  </div>
+  <div class="card">
+    <h2>Tips</h2>
+    <ul class="mut" style="padding-left:18px;margin:0">
+      <li>Pindahkan TikTok/IG/Threads ke <b>folder di halaman terakhir</b>.</li>
+      <li>Taruh <b>Rem Scroll</b> di posisi lama TikTok.</li>
+      <li>Matikan <b>notifikasi</b> TikTok, IG, Threads.</li>
+    </ul>
+  </div>
+  <button class="ghost" id="btnReset">Hapus semua data</button>
+</section>
+
+</main>
+
+<nav>
+  <button data-tab="gerbang" class="on">🛑 Gerbang</button>
+  <button data-tab="fokus">⏱️ Fokus</button>
+  <button data-tab="stat">📊 Statistik</button>
+</nav>
+
+<script>
+const APPS = {
+  tiktok:  {name:'TikTok',  emoji:'🎵', url:'https://www.tiktok.com/'},
+  reels:   {name:'IG Reels',emoji:'📸', url:'https://www.instagram.com/reels/'},
+  threads: {name:'Threads', emoji:'🧵', url:'https://www.threads.net/'},
+  shorts:  {name:'YT Shorts',emoji:'▶️', url:'https://www.youtube.com/shorts'}
+};
+const NEEDS = ['Bosan','Capek','Kabur dari kerjaan','Cemas','Kesepian','Kebiasaan aja'];
+const TASKS = {
+  'Bosan':['Baca 2 halaman buku','Tulis 3 ide bisnis baru','Rapikan 1 laci/meja','Dengar 1 lagu sambil merem'],
+  'Capek':['Rebahan tanpa HP 5 menit','Minum segelas air','Peregangan leher & bahu 2 menit','Cuci muka'],
+  'Kabur dari kerjaan':['Kerjakan tugas terkecil selama 5 menit saja','Tulis 1 langkah berikutnya untuk kerjaan','Balas 1 chat kerja yang tertunda'],
+  'Cemas':['Napas 4-7-8 sebanyak 4 kali','Tulis apa yang bikin cemas di kertas','Jalan keliling rumah 3 menit'],
+  'Kesepian':['Chat 1 teman/keluarga, tanya kabar','Peluk anak/pasangan','Telepon orang tua 5 menit'],
+  'Kebiasaan aja':['Minum segelas air','Berdiri & jalan 2 menit','Lihat jauh ke luar jendela 1 menit','10 squat']
+};
+const KEY='remscroll.v1';
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{log:[]}}catch(e){return{log:[]}}};
+let db=load();
+const save=()=>localStorage.setItem(KEY,JSON.stringify(db));
+const dayKey=(d=new Date())=>d.toLocaleDateString('sv-SE');
+const $=id=>document.getElementById(id);
+
+let cur={app:null,need:null,min:null};
+
+// ---------- Navigasi ----------
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  ['gerbang','fokus','stat'].forEach(t=>$('tab-'+t).classList.toggle('hide',t!==b.dataset.tab));
+  if(b.dataset.tab==='stat')renderStats();
+});
+
+// ---------- Gerbang ----------
+const steps=['g-pick','g-wait','g-ask','g-limit','g-swap','g-win'];
+const show=id=>steps.forEach(s=>$(s).classList.toggle('hide',s!==id));
+
+$('appBtns').innerHTML=Object.entries(APPS).map(([k,a])=>`<button class="app" data-app="${k}">${a.emoji}<br>${a.name}</button>`).join('');
+$('appBtns').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  cur={app:b.dataset.app,need:null,min:null};
+  $('g-wait-title').textContent=`Mau buka ${APPS[cur.app].name}?`;
+  show('g-wait');
+  let n=10;$('g-count').textContent=n;
+  const t=setInterval(()=>{n--;$('g-count').textContent=n;if(n<=0){clearInterval(t);askStep()}},1000);
+};
+function askStep(){
+  $('needChips').innerHTML=NEEDS.map(n=>`<button class="chip" data-n="${n}">${n}</button>`).join('');
+  show('g-ask');
+}
+$('needChips').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  cur.need=b.dataset.n;
+  [...$('needChips').children].forEach(c=>c.classList.toggle('on',c===b));
+};
+const pickTask=()=>{const l=TASKS[cur.need||'Kebiasaan aja'];$('taskTxt').textContent=l[Math.floor(Math.random()*l.length)]};
+$('btnSwap').onclick=()=>{pickTask();show('g-swap')};
+$('btnOther').onclick=pickTask;
+$('btnDone').onclick=()=>{
+  db.log.push({t:Date.now(),app:cur.app,need:cur.need,res:'tahan'});save();
+  const s=todayCount();
+  $('winTxt').textContent=`Hari ini: ${s.tahan} kali menahan, ${s.lolos} kali buka.`;
+  show('g-win');renderHeader();
+};
+$('btnBack').onclick=()=>show('g-pick');
+$('btnOpen').onclick=()=>{
+  $('minChips').innerHTML=[5,10,15].map(m=>`<button class="chip" data-m="${m}">${m} menit</button>`).join('');
+  $('btnGo').disabled=true;show('g-limit');
+};
+$('minChips').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  cur.min=+b.dataset.m;$('btnGo').disabled=false;
+  [...$('minChips').children].forEach(c=>c.classList.toggle('on',c===b));
+};
+$('btnCancel').onclick=()=>{pickTask();show('g-swap')};
+$('btnGo').onclick=()=>{
+  db.log.push({t:Date.now(),app:cur.app,need:cur.need,res:'lolos',min:cur.min});save();
+  renderHeader();show('g-pick');
+  location.href=APPS[cur.app].url;
+};
+
+// ---------- Statistik ----------
+function countFor(day){
+  const r={tahan:0,lolos:0,menit:0,fokus:0};
+  db.log.filter(x=>dayKey(new Date(x.t))===day).forEach(x=>{if(x.res==='fokus'){r.fokus+=x.min;return}r[x.res]++;if(x.min)r.menit+=x.min});
+  return r;
+}
+const todayCount=()=>countFor(dayKey());
+function streak(){
+  // hari berturut-turut (sampai kemarin/hari ini) dengan tahan >= lolos dan ada aktivitas
+  let s=0;const d=new Date();
+  const today=countFor(dayKey(d));
+  if(!(today.tahan+today.lolos)||today.tahan<today.lolos){d.setDate(d.getDate()-1)}
+  for(;;){const c=countFor(dayKey(d));if(c.tahan+c.lolos>0&&c.tahan>=c.lolos){s++;d.setDate(d.getDate()-1)}else break}
+  return s;
+}
+function renderHeader(){
+  const c=todayCount();
+  $('streakTxt').innerHTML=`🔥 Streak <b>${streak()}</b> hari · Hari ini menang <b>${c.tahan}</b>, kalah <b>${c.lolos}</b>`;
+}
+function renderStats(){
+  const c=todayCount();
+  const per={};db.log.filter(x=>dayKey(new Date(x.t))===dayKey()).filter(x=>x.app).forEach(x=>{per[x.app]=per[x.app]||{tahan:0,lolos:0};per[x.app][x.res]++});
+  $('todayStats').innerHTML=
+    `<div class="stat"><span>Menahan diri</span><span class="ok">${c.tahan}×</span></div>`+
+    `<div class="stat"><span>Tetap buka</span><span class="no">${c.lolos}×</span></div>`+
+    `<div class="stat"><span>Rencana waktu scroll</span><span>${c.menit} menit</span></div>`+
+    `<div class="stat"><span>Waktu fokus</span><span class="ok">${c.fokus} menit</span></div>`+
+    Object.entries(per).map(([k,v])=>`<div class="stat"><span>${APPS[k].emoji} ${APPS[k].name}</span><span><span class="ok">${v.tahan}</span> / <span class="no">${v.lolos}</span></span></div>`).join('');
+  let w='';const d=new Date();
+  for(let i=0;i<7;i++){
+    const k=dayKey(d),x=countFor(k),tot=x.tahan+x.lolos,p=tot?Math.round(x.tahan/tot*100):0;
+    w+=`<div class="mut">${d.toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short'})} — ${x.tahan} menang / ${x.lolos} kalah</div><div class="bar"><div style="width:${p}%"></div></div>`;
+    d.setDate(d.getDate()-1);
+  }
+  $('weekStats').innerHTML=w;
+}
+$('btnReset').onclick=()=>{if(confirm('Hapus semua data?')){db={log:[]};save();renderStats();renderHeader()}};
+
+// ---------- Fokus ----------
+let fMin=15,fEnd=null,fTimer=null;
+$('focusChips').innerHTML=[15,25,45].map(m=>`<button class="chip${m===15?' on':''}" data-m="${m}">${m}m</button>`).join('');
+$('focusChips').onclick=e=>{
+  const b=e.target.closest('button');if(!b||fTimer)return;
+  fMin=+b.dataset.m;[...$('focusChips').children].forEach(c=>c.classList.toggle('on',c===b));
+  $('fClock').textContent=`${fMin}:00`;
+};
+function fTick(){
+  const left=Math.max(0,fEnd-Date.now()),s=Math.ceil(left/1000);
+  $('fClock').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  $('fBar').style.width=(100-left/(fMin*600))+'%';
+  if(left<=0){fStopFn();db.log.push({t:Date.now(),res:'fokus',min:fMin});save();
+    try{navigator.vibrate&&navigator.vibrate([400,200,400])}catch(e){}
+    beepNow();alert(`Selesai fokus ${fMin} menit! 🎉`)}
+}
+function fStopFn(){clearInterval(fTimer);fTimer=null;fEnd=null;localStorage.removeItem(KEY+'.fokus')}
+$('fStart').onclick=()=>{if(fTimer)return;fEnd=Date.now()+fMin*60000;localStorage.setItem(KEY+'.fokus',JSON.stringify({fEnd,fMin}));fTimer=setInterval(fTick,500);fTick()};
+$('fStop').onclick=()=>{fStopFn();$('fClock').textContent=`${fMin}:00`;$('fBar').style.width='0%'};
+function beepNow(){try{const a=new AudioContext(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=880;o.start();setTimeout(()=>o.stop(),600)}catch(e){}}
+// lanjutkan timer kalau app sempat ditutup
+(()=>{const f=JSON.parse(localStorage.getItem(KEY+'.fokus')||'null');if(f&&f.fEnd>Date.now()){fEnd=f.fEnd;fMin=f.fMin;fTimer=setInterval(fTick,500)}})();
+renderHeader();
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
