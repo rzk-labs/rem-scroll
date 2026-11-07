@@ -7,12 +7,16 @@
 <title>Rem Scroll</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rem Scroll">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   :root{--bg:#0f172a;--card:#1e293b;--tx:#f1f5f9;--mut:#94a3b8;--acc:#22c55e;--warn:#f97316;--bad:#ef4444}
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;padding-bottom:84px}
-  header{padding:18px 16px 4px}
+  header{padding:calc(18px + env(safe-area-inset-top)) 16px 4px}
   h1{margin:0;font-size:22px}
   .sub{color:var(--mut);font-size:14px;margin-top:4px}
   main{padding:12px 16px;max-width:520px;margin:0 auto}
@@ -130,9 +134,10 @@
   <div class="card">
     <h2>Tips</h2>
     <ul class="mut" style="padding-left:18px;margin:0">
-      <li>Pindahkan TikTok/IG/Threads ke <b>folder di halaman terakhir</b>.</li>
+      <li>Install: Safari → <b>Bagikan</b> → <b>Tambah ke Layar Utama</b>.</li>
+      <li>Pindahkan TikTok/IG/Threads ke <b>App Library</b> (tekan lama → Hapus dari Layar Utama).</li>
       <li>Taruh <b>Rem Scroll</b> di posisi lama TikTok.</li>
-      <li>Matikan <b>notifikasi</b> TikTok, IG, Threads.</li>
+      <li>Matikan <b>notifikasi</b> TikTok, IG, Threads (Pengaturan → Notifikasi).</li>
     </ul>
   </div>
   <button class="ghost" id="btnReset">Hapus semua data</button>
