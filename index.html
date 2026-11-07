@@ -121,6 +121,42 @@
   </div>
 </section>
 
+<!-- TAB: ATUR -->
+<section id="tab-atur" class="hide">
+  <div class="card">
+    <h2>🔒 Rem otomatis (iPhone)</h2>
+    <p class="mut">Setelah dipasang, setiap kali TikTok/IG/Threads/YouTube dibuka, Rem Scroll muncul duluan. Kalau kamu pilih "Tetap buka", app itu boleh dipakai selama menit yang kamu pilih.</p>
+    <label style="display:flex;gap:10px;align-items:center;margin:12px 0"><input type="checkbox" id="scToggle" style="width:22px;height:22px"> <b>Saya sudah pasang 2 langkah di bawah</b></label>
+  </div>
+  <div class="card">
+    <h2>Langkah A — Shortcut "Rem Izin"</h2>
+    <ol class="mut" style="padding-left:18px;margin:0;line-height:1.6">
+      <li>Buka app <b>Pintasan (Shortcuts)</b> → tab <b>Pintasan</b> → <b>+</b></li>
+      <li>Ganti nama jadi persis: <b>Rem Izin</b></li>
+      <li>Tambah aksi <b>Simpan File</b> (Save File) → isi: <b>Input Pintasan</b></li>
+      <li>Matikan <b>Tanya Tempat Simpan</b>, isi Jalur: <b>rem-izin.txt</b>, nyalakan <b>Timpa Jika File Ada</b></li>
+      <li>Selesai</li>
+    </ol>
+  </div>
+  <div class="card">
+    <h2>Langkah B — Otomasi "Gerbang"</h2>
+    <ol class="mut" style="padding-left:18px;margin:0;line-height:1.6">
+      <li>Pintasan → tab <b>Otomasi</b> → <b>+</b> → <b>App</b></li>
+      <li>Pilih <b>TikTok, Instagram, Threads, YouTube</b> → centang <b>Dibuka</b> → pilih <b>Jalankan Segera</b></li>
+      <li>Buat pintasan baru, tambahkan aksi berurutan:</li>
+      <li style="list-style:none">① <b>Dapatkan File</b> dari folder Pintasan, jalur <b>rem-izin.txt</b>, matikan <b>Error Jika Tidak Ditemukan</b><br>
+      ② <b>Dapatkan Tanggal dari Input</b> (dari File)<br>
+      ③ <b>Jika</b> Tanggal <b>setelah</b> <b>Tanggal Saat Ini</b> → di dalamnya: <b>Hentikan Pintasan Ini</b><br>
+      ④ Setelah <b>Akhiri Jika</b>: <b>Buka URL</b> → <code id="gateUrl"></code></li>
+    </ol>
+  </div>
+  <div class="card">
+    <h2>Tes</h2>
+    <p class="mut">Buka TikTok → harus muncul Rem Scroll. Pilih "Tetap buka 5 menit" → TikTok terbuka dan tidak dicegat lagi selama 5 menit.</p>
+    <div class="mut">Izin aktif sampai: <b id="izinTxt">-</b></div>
+  </div>
+</section>
+
 <!-- TAB: STATISTIK -->
 <section id="tab-stat" class="hide">
   <div class="card">
@@ -149,6 +185,7 @@
   <button data-tab="gerbang" class="on">🛑 Gerbang</button>
   <button data-tab="fokus">⏱️ Fokus</button>
   <button data-tab="stat">📊 Statistik</button>
+  <button data-tab="atur">⚙️ Atur</button>
 </nav>
 
 <script>
@@ -179,8 +216,9 @@ let cur={app:null,need:null,min:null};
 // ---------- Navigasi ----------
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
-  ['gerbang','fokus','stat'].forEach(t=>$('tab-'+t).classList.toggle('hide',t!==b.dataset.tab));
+  ['gerbang','fokus','stat','atur'].forEach(t=>$('tab-'+t).classList.toggle('hide',t!==b.dataset.tab));
   if(b.dataset.tab==='stat')renderStats();
+  if(b.dataset.tab==='atur')renderAtur();
 });
 
 // ---------- Gerbang ----------
@@ -228,8 +266,23 @@ $('btnCancel').onclick=()=>{pickTask();show('g-swap')};
 $('btnGo').onclick=()=>{
   db.log.push({t:Date.now(),app:cur.app,need:cur.need,res:'lolos',min:cur.min});save();
   renderHeader();show('g-pick');
-  location.href=APPS[cur.app].url;
+  location.href=openUrl(cur.app,cur.min);
 };
+// ---------- Rem otomatis (Shortcuts) ----------
+const fmtDate=d=>d.toLocaleString('sv-SE').slice(0,19); // "2026-11-07 10:30:00" — dibaca "Dapatkan Tanggal"
+function openUrl(app,min){
+  const url=APPS[app].url;
+  if(!db.shortcut)return url;
+  const end=new Date(Date.now()+min*60000);db.izin=end.getTime();save();
+  return 'shortcuts://x-callback-url/run-shortcut?name='+encodeURIComponent('Rem Izin')+
+    '&input=text&text='+encodeURIComponent(fmtDate(end))+'&x-success='+encodeURIComponent(url);
+}
+function renderAtur(){
+  $('scToggle').checked=!!db.shortcut;
+  $('gateUrl').textContent=location.origin+location.pathname;
+  $('izinTxt').textContent=db.izin&&db.izin>Date.now()?new Date(db.izin).toLocaleTimeString('id-ID'):'-';
+}
+$('scToggle').onchange=e=>{db.shortcut=e.target.checked;save()};
 
 // ---------- Statistik ----------
 function countFor(day){
@@ -267,7 +320,7 @@ function renderStats(){
   }
   $('weekStats').innerHTML=w;
 }
-$('btnReset').onclick=()=>{if(confirm('Hapus semua data?')){db={log:[]};save();renderStats();renderHeader()}};
+$('btnReset').onclick=()=>{if(confirm('Hapus semua data?')){db={log:[],shortcut:db.shortcut};save();renderStats();renderHeader()}};
 
 // ---------- Fokus ----------
 let fMin=15,fEnd=null,fTimer=null;
